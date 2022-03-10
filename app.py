@@ -115,10 +115,187 @@ def processRequest(req):
 
     # First Time Webhook call
     if(intent=='symptoms-start'):
-        final_symp2=parameters.get("symptoms")
-        print("Line 119 - User symptoms are ", final_symp2)
+        processed_user_symptoms=parameters.get("symptoms")
+        print("Line 119 - User symptoms are ", processed_user_symptoms)
 
         fulfillmentText=""
+        found_symptoms = set()
+
+        stop_words = stopwords.words('english')
+        lemmatizer = WordNetLemmatizer()
+        splitter = RegexpTokenizer(r'\w+')
+
+        def synonyms(term):
+            synonyms = []
+            response = requests.get('https://www.thesaurus.com/browse/{}'.format(term))
+            soup = BeautifulSoup(response.content,  "html.parser")
+            try:
+                container=soup.find('section', {'class': 'MainContentContainer'})
+                row=container.find('div',{'class':'css-191l5o0-ClassicContentCard'})
+                row = row.find_all('li')
+                for x in row:
+                    synonyms.append(x.get_text())
+            except:
+                None
+            for syn in wordnet.synsets(term):
+                synonyms+=syn.lemma_names()
+            return set(synonyms)
+
+    # Taking each user symptom and finding all its synonyms and appending it to the pre-processed symptom string
+        user_symptoms = []
+        for user_sym in processed_user_symptoms:
+            user_sym = user_sym.split()
+            str_sym = set()
+            for comb in range(1, len(user_sym)+1):
+                for subset in combinations(user_sym, comb):
+                    subset=' '.join(subset)
+                    subset = synonyms(subset)
+                    str_sym.update(subset)
+            str_sym.add(' '.join(user_sym))
+            user_symptoms.append(' '.join(str_sym).replace('_',' '))
+        # query expansion performed by joining synonyms found for each symptoms initially entered
+        print("Line 157 - After query expansion done by using the symptoms entered")
+        print(user_symptoms)
+
+        # Loop over all the symptoms in dataset and check its similarity score to the synonym string of the user-input
+        # symptoms. If similarity>0.5, add the symptom to the final list
+        for idx, data_sym in enumerate(dataset_symptoms):
+            data_sym_split=data_sym.split()
+            for user_sym in user_symptoms:
+                count=0
+                for symp in data_sym_split:
+                    if symp in user_sym.split():
+                        count+=1
+                if count/len(data_sym_split)>0.5:
+                    if data_sym not in found_symptoms:
+                        found_symptoms.add(data_sym)
+                    
+        found_symptoms = list(found_symptoms)
+        print("Line 174 - found_symptoms :")
+        print(found_symptoms)
+
+        def defSTRfound_symptoms():
+            fulfillmentText = "\n"
+            for idx, value in enumerate(found_symptoms):
+                index = int(idx)+1
+                tup =  (index, ":", value, "\n")
+                STRfound_symptoms = ' '.join(map(str, tup))
+                fulfillmentText += STRfound_symptoms
+            print(fulfillmentText)     
+            return fulfillmentText
+        
+        fulfillmentText= "This is the list of synonyms of your symptoms - "+ defSTRfound_symptoms() +" Enter the applicable indices. \n In the form - I have 1,2,3 "
+        return {
+            "fulfillmentText": fulfillmentText
+        }
+
+
+    if(intent=='symptoms-start-synonyms'):
+        fulfillmentText=""
+#         print("Line 195 - found_symptoms :")
+#         print(found_symptoms)
+        term2 = []
+        userinput = parameters.get("number")
+        print(userinput )
+        for i in range(0, len(userinput)):
+            term2.append(int(userinput[i])-1)
+        print("Line 202 - User entered indices after processing - ", term2)
+      
+        # Show the related symptoms found in the dataset and ask user to select among them
+        select_list = term2
+        # Find other relevant symptoms from the dataset based on user symptoms based on the highest co-occurance with the
+        # ones that is input by the user
+        dis_list = set()
+        # final_symp = []
+        counter_list = []
+        found_symptoms = list(parameter2)
+        print("Line 212 - parameter2 - found_symptoms:")
+        print(found_symptoms)
+        for idx in range(len(found_symptoms)):
+            symp=found_symptoms[int(idx)]
+            final_symp.append(symp)
+            dis_list.update(set(df1[df1[symp]==1]['label_dis']))
+
+        for dis in dis_list:
+            row = df1.loc[df1['label_dis'] == dis].values.tolist()
+            row[0].pop(0)
+            for idx,val in enumerate(row[0]):
+                if val!=0 and dataset_symptoms[idx] not in final_symp:
+                    counter_list.append(dataset_symptoms[idx])
+
+        # Symptoms that co-occur with the ones selected by user
+        dict_symp = dict(Counter(counter_list))
+        dict_symp_tup = sorted(dict_symp.items(), key=operator.itemgetter(1),reverse=True)
+        # print(dict_symp_tup)         #Lists all the cooccuring symptoms
+
+        # Iteratively, suggest top co-occuring symptoms to the user and ask to select the ones applicable
+        found_symptoms=[]
+
+        count=0
+        for tup in dict_symp_tup:
+            count+=1
+            found_symptoms.append(tup[0])
+        final_symptoms.append(found_symptoms[0:10:])
+        print("Line 239 - ")
+        print(final_symptoms)
+
+        def defSTRfinal_symptoms():
+            fulfillmentText = "\n"
+            for idx, value in enumerate(final_symptoms[0]):
+                index = int(idx)+1
+                tup =  (index, ":", value, "\n")
+                STRfinal_symptoms = ' '.join(map(str, tup))
+                fulfillmentText += STRfinal_symptoms
+                print(fulfillmentText)     
+            return fulfillmentText
+
+        fulfillmentText="This is a list of co-occuring symptoms - \n" + defSTRfinal_symptoms() + " Enter the applicable indices. \n In the form - Choose 1,2,3 "
+        return {
+            "fulfillmentText": fulfillmentText
+            
+        }
+
+    if(intent=='symptoms-start-co-occuring'):
+
+        term3 = []
+        userinput = parameters.get("number")
+        print(userinput )
+        for i in range(0, len(userinput)):
+            term3.append(int(userinput[i])-1)
+        print("Line 265 - User entered indices after processing - ", term3)
+
+        fulfillmentText=""
+        print(final_symptoms)
+        finals=final_symptoms[0]
+        print("Line 270 - finals :", finals)
+        for i in range(len(term3)):
+            x=int(term3[i])
+            final_symp2.append(finals[x])
+            
+        print(final_symp2)
+        
+        for i in range(len(final_symp)):
+            final_symp2.append(final_symp[i])
+
+        def defSTRfinal_symp2():
+            fulfillmentText = "\n"
+            for idx, value in enumerate(final_symp2):
+                index = int(idx)+1
+                tup =  (index, ":", value, "\n")
+                STRfinal_symp2 = ' '.join(map(str, tup))
+                fulfillmentText += STRfinal_symp2
+                print(fulfillmentText)     
+            return fulfillmentText
+
+        fulfillmentText="This is the final list of symptoms - \n"+ defSTRfinal_symp2() + "Type YES to proceed. \n"
+        return {
+            "fulfillmentText": fulfillmentText
+        }
+
+    elif(intent=='symptoms-start-co-occuring - yes'):
+
+        fulfillmentText=""
+
         sample_x = [0 for x in range(0,len(dataset_symptoms))]
         for val in final_symp2:
             print(val)
@@ -134,6 +311,10 @@ def processRequest(req):
         knn = KNeighborsClassifier(n_neighbors=7, weights='distance', n_jobs=4)
         knn = knn.fit(X, Y)
         knn_pred = knn.predict_proba([sample_x])
+
+        # rf = RandomForestClassifier(n_estimators=10, criterion='entropy')
+        # rf = rf.fit(X, Y)
+        # rf_pred = rf.predict_proba([sample_x])
 
         # Multinomial NB Classifier
         mnb = MultinomialNB()
@@ -228,7 +409,6 @@ def processRequest(req):
         print(my_arr.index(max))
         print()
         fulfillmentText = "You may have one of these following diseases: \n\n"
-        # fulfillmentText = my_array[my_arr.index(max)]
         fulfillmentText += diseaseDetail(my_array[my_arr.index(max)])
         fulfillmentText += "We suggest consulting a real doctor before starting any treatment for your own safety!"
         return {
