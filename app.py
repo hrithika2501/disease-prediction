@@ -409,7 +409,8 @@ def processRequest(req):
         print(my_arr.index(max))
         print()
         fulfillmentText = "You may have one of these following diseases: \n\n"
-        fulfillmentText += diseaseDetail(my_array[my_arr.index(max)])
+        fulfillmentText = my_array[my_arr.index(max)]
+       # fulfillmentText += diseaseDetail(my_array[my_arr.index(max)])
         fulfillmentText += "We suggest consulting a real doctor before starting any treatment for your own safety!"
         return {
             "fulfillmentText": fulfillmentText
