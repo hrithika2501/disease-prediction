@@ -211,7 +211,7 @@ def processRequest(req):
         found_symptoms = list(parameter2)
         print("Line 212 - parameter2 - found_symptoms:")
         print(found_symptoms)
-        for idx in select_list:
+        for idx in range(len(found_symptoms)):
             symp=found_symptoms[int(idx)]
             final_symp.append(symp)
             dis_list.update(set(df1[df1[symp]==1]['label_dis']))
