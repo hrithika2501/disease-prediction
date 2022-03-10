@@ -19,7 +19,6 @@ bs4==0.0.1
 
 altgraph==0.17.2
 appdirs==1.4.4
-nltk
 
 certifi==2021.5.30
 chardet==4.0.0
