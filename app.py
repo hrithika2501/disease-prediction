@@ -123,7 +123,8 @@ def processRequest(req):
         fulfillmentText = "You may have one of these following diseases: \n\n"
         # fulfillmentText = my_array[my_arr.index(max)]
         for i in range(len(final_symp2)):
-            print(final_symp2)   
+            print(final_symp2)
+            fulfillmentText+=i+1
             fulfillmentText += diseaseDetail(final_symp2[i])
         fulfillmentText += "We suggest consulting a real doctor before starting any treatment for your own safety!"
         return {
