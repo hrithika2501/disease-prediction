@@ -1,28 +1,28 @@
 beautifulsoup4==4.9.3
-certifi
-charset-normalizer
-click
-colorama
+
+
+# click
+# colorama
 Flask
 Flask-Cors
-googlesearch-python
-idna
-itsdangerous
-Jinja2
+
+
+# itsdangerous
+
 logger
 MarkupSafe
-requests
-six
-soupsieve
-urllib3
-Werkzeug
+
+
+
+
+# Werkzeug
 gunicorn
 bs4==0.0.1
-html5lib==1.1
+
 altgraph==0.17.2
 appdirs==1.4.4
 nltk
-bs4==0.0.1
+
 certifi==2021.5.30
 chardet==4.0.0
 charset-normalizer==2.0.4
@@ -48,7 +48,7 @@ pytz==2021.1
 pywin32-ctypes==0.2.0
 
 requests==2.25.1
-scikit-learn==0.24.2
+# scikit-learn==0.24.2
 scipy==1.7.0
 six==1.15.0
 sklearn==0.0
@@ -56,6 +56,6 @@ soupsieve==2.2.1
 sqlparse==0.4.1
 threadpoolctl==2.2.0
 urllib3==1.26.6
-virtualenv==20.4.2
-virtualenvwrapper-win==1.2.6
+# virtualenv==20.4.2
+# virtualenvwrapper-win==1.2.6
 webencodings==0.5.1
