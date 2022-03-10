@@ -4,7 +4,7 @@ beautifulsoup4==4.9.3
 
 Flask
 Flask-Cors
-
+nltk
 
 
 logger
