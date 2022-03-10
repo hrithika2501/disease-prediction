@@ -116,7 +116,7 @@ def processRequest(req):
     # First Time Webhook call
     if(intent=='symptoms-start'):
         final_symp2=parameters.get("symptoms")
-        print("Line 119 - User symptoms are ", processed_user_symptoms)
+        print("Line 119 - User symptoms are ", final_symp2)
 
         fulfillmentText=""
         sample_x = [0 for x in range(0,len(dataset_symptoms))]
